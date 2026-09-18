@@ -1,41 +1,46 @@
 """
 ==========================================================
-LangChain AI Agent — Ollama
+LangChain for AI Agents — Gemini Companion Code
 ==========================================================
 
 Demonstrates:
-- Agent behavior
+- ReAct-style agent behavior
 - Tool calling
 - Multiple tool calls
 - Error handling
 - LangChain create_agent()
-- Ollama as the local LLM
+- Google Gemini as the LLM
 
 Prerequisites:
-    pip install -U langchain langgraph langchain-ollama
+    pip install -U langchain langgraph langchain-google-genai python-dotenv
 
-Ollama model:
-    llama3.2:3b
+.env:
+    GOOGLE_API_KEY=your-gemini-api-key
 ==========================================================
 """
 
 # -------------------------------------------------------
-# STEP 0: Imports
+# STEP 0: Load environment variables
 # -------------------------------------------------------
 
+import os
 import math
+from dotenv import load_dotenv
 
-from langchain_ollama import ChatOllama
-from langchain_core.tools import tool
-from langchain.agents import create_agent
+load_dotenv()
+
+if not os.getenv("GEMINI_API_KEY"):
+    raise ValueError("GEMINI_API_KEY not found in .env")
 
 
 # -------------------------------------------------------
-# STEP 1: Initialize Ollama
+# STEP 1: Initialize Gemini
 # -------------------------------------------------------
 
-model = ChatOllama(
-    model="llama3.2:3b",
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+model = ChatGoogleGenerativeAI(
+    model="gemini-3.8-flash",
     temperature=0,
 )
 
@@ -43,6 +48,9 @@ model = ChatOllama(
 # -------------------------------------------------------
 # STEP 2: Define Tools
 # -------------------------------------------------------
+
+from langchain_core.tools import tool
+
 
 @tool
 def add(a: float, b: float) -> float:
@@ -110,6 +118,8 @@ print()
 # STEP 4: Create Agent
 # -------------------------------------------------------
 
+from langchain.agents import create_agent
+
 agent = create_agent(
     model=model,
     tools=tools,
@@ -151,8 +161,12 @@ def run_agent(question: str):
             for tool_call in msg.tool_calls:
 
                 print(f"{step}. Agent decision:")
-                print(f"   Tool: {tool_call['name']}")
-                print(f"   Input: {tool_call['args']}")
+                print(
+                    f"   Tool: {tool_call['name']}"
+                )
+                print(
+                    f"   Input: {tool_call['args']}"
+                )
 
                 step += 1
 
@@ -201,4 +215,4 @@ run_agent(
 )
 
 
-print("\n✅ Ollama Agent Demo Complete!")
+print("\n✅ Gemini Agent Demo Complete!")
